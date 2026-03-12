@@ -1,23 +1,6 @@
 # Claude Productivity
 
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code)를 활용한 생산성 향상 도구 모음입니다.
-
-## Projects
-
-### 🛠 Skills & Commands
-
-Claude Code CLI에서 사용하는 커스텀 Skills과 Slash Commands입니다.
-
-### 📊 Dashboard (예정)
-
-로컬에서 실행 중인 Claude Code 세션들을 자동 감지하여 상태를 한눈에 보여주고, 모든 세션의 작업 로그를 로컬에 누적 적재하여 히스토리 추적이 가능한 대시보드입니다.
-
-- **실시간 세션 모니터링** — 🟢 작업중 / 🟡 입력대기 / ⚪ 완료 / 🔴 에러
-- **작업 로그 적재** — Claude Code hooks를 통해 세션 이벤트를 자동 수집·영구 보관
-- **세션 상세 뷰** — 대화 로그 확인, 작업 요약, 변경 파일 목록
-- **하이브리드 UI** — `claude-dash` CLI + 웹 대시보드
-
----
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI에서 사용하는 커스텀 Skills과 Slash Commands 모음입니다.
 
 ## Skills
 
