@@ -1,6 +1,6 @@
 ---
-description: 현재 대화 내용을 분석하여 Obsidian vault에 구조화된 노트로 정리합니다.
-allowed-tools: Bash, AskUserQuestion, mcp__obsidian__write_note, mcp__obsidian__patch_note, mcp__obsidian__search_notes, mcp__obsidian__read_note, mcp__obsidian__read_multiple_notes, mcp__obsidian__list_directory
+description: 현재 대화 내용을 분석하여 Obsidian vault에 구조화된 노트로 정리합니다. "대화 정리해줘", "옵시디언에 저장", "노트로 남겨줘", "로그 적재", "이거 기록해둬" 등 대화 내용을 보존하고 싶을 때 사용하세요.
+allowed-tools: AskUserQuestion, mcp__obsidian__write_note, mcp__obsidian__patch_note, mcp__obsidian__search_notes, mcp__obsidian__read_note, mcp__obsidian__read_multiple_notes, mcp__obsidian__list_directory
 argument-hint: <비워두면 자동 분류>
 ---
 
@@ -19,21 +19,28 @@ argument-hint: <비워두면 자동 분류>
 | `040.Logs/` | Claude 대화 로그 | `log` |
 | `050.Etc/` | 일기, 사색, 여행, 기타 | `diary`, `etc` |
 
+---
+
 ### 동작 프로세스 (3단계)
 
 #### Step 1: 대화 로그 저장 (자동)
-- 대화 내용을 분석하여 `040.Logs/yyyy-MM-dd claude.md`에 **항상** 저장한다.
-- 이미 해당 날짜 로그가 있으면 기존 내용을 읽고, **새로운 토픽만 append** (중복 방지)
-- 로그에는 대화의 모든 토픽을 요약한다.
 
-#### Step 2: Vault 전체 탐색 및 제안 (대화형)
-대화 내용과 관련된 노트를 찾기 위해 **항상** Vault 디렉토리를 탐색한다.
+대화 내용을 분석하여 `040.Logs/yyyy-MM-dd claude.md`에 **항상** 저장한다.
 
-1. `list_directory`로 **최상위 폴더** 목록을 확인한다.
-2. 관련 가능성이 있는 **하위 폴더**도 재귀적으로 탐색한다.
-   - 예: `010.Work/` → `012.DailyMail/` → 내부 파일 확인
-3. `search_notes`로 대화 키워드와 관련된 **기존 노트를 검색**한다.
-4. 관련 노트가 발견되면 `read_note`로 내용을 확인하여 **업데이트 가능 여부**를 판단한다.
+1. 먼저 `read_note`로 해당 날짜 로그가 있는지 확인
+2. 있으면 기존 내용을 읽고 **새로운 토픽만 append** (중복 방지)
+   - `---\n## Related` 블록 바로 앞에 새 토픽을 삽입 (`patch_note` 사용)
+   - 새 Related 링크가 있으면 기존 Related 섹션에 추가
+3. 없으면 새 로그 파일 생성 (`write_note`)
+
+#### Step 2: 관련 노트 탐색 및 제안
+
+대화 키워드로 **`search_notes`부터** 검색한다. 디렉토리를 재귀 탐색하는 것보다 빠르고 정확하다.
+
+1. 대화에서 핵심 키워드 2~3개를 추출한다
+2. `search_notes`로 각 키워드를 검색한다 (병렬 가능)
+3. 검색 결과가 있으면 `read_note`로 내용을 확인하여 업데이트 가능 여부를 판단한다
+4. 검색 결과가 부족하거나, 신규 노트 생성 위치를 결정해야 할 때만 `list_directory`로 폴더 구조를 확인한다
 
 탐색 결과를 바탕으로 사용자에게 **제안**한다:
 - **기존 노트 업데이트** — 관련 내용이 이미 있는 노트
@@ -55,6 +62,8 @@ Vault를 확인했어요. 다음 노트에 정리할 수 있을 것 같아요:
 - "전부"면 제안된 모든 노트를 처리한다.
 - "스킵"이면 Step 1의 로그만 저장하고 끝낸다.
 
+---
+
 ### 분류 기준
 
 | 대화 내용 | 폴더 | 파일명 패턴 |
@@ -64,6 +73,8 @@ Vault를 확인했어요. 다음 노트에 정리할 수 있을 것 같아요:
 | 업무 회의, 설계, 문서 작업 | `040.Logs/` (필수) + `010.Work/하위/` (제안) | 주제에 맞는 파일명 |
 | 공부, 기술 학습, 독서 | `040.Logs/` (필수) + `020.Growth/` (제안) | `yyyy-MM-dd 주제.md` |
 | 개인 이야기, 잡담, 기타 | `040.Logs/` (필수) | - |
+
+---
 
 ### 노트 작성 규칙
 
@@ -127,13 +138,7 @@ date: "yyyy-MM-dd"
 - 기술 학습 → `021.Study/` 하위에 배치
 - 운동/건강 → `020.Growth/` 직하에 배치
 
-### 기존 노트 확인
-
-노트를 생성하기 전에 반드시:
-1. `list_directory`로 관련 폴더의 **전체 구조**를 파악한다
-2. `search_notes`로 대화 키워드 관련 **기존 노트를 검색**한다
-3. 발견된 노트는 `read_note`로 **내용을 확인**하여 업데이트 범위를 결정한다
-4. `040.Logs/yyyy-MM-dd claude.md`가 이미 있으면 기존 내용을 읽고 **새로운 토픽만 append** (중복 방지)
+---
 
 ### 출력 형식
 
